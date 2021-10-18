@@ -1,6 +1,9 @@
 package com.example.my_green_pass
 
 import androidx.annotation.NonNull
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.ViewModelStoreOwner
 import dgca.verifier.app.decoder.base45.Base45Service
 import dgca.verifier.app.decoder.base45.DefaultBase45Service
 import dgca.verifier.app.decoder.cbor.CborService
@@ -35,6 +38,7 @@ import it.ministerodellasalute.verificaC19sdk.security.KeyStoreCryptor
 class MainActivity : FlutterActivity() {
     private val CHANNEL = "manueltag.dev/decodeqrcode"
 
+
     override fun configureFlutterEngine(@NonNull flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(
@@ -58,6 +62,7 @@ class MainActivity : FlutterActivity() {
     private fun decodeQrCode(qrcode: String): String {
         val qrCodeData: String = "Test 123";
 
+        /*
         val prefixValidationService: PrefixValidationService = DefaultPrefixValidationService()
         val base45Service: Base45Service = DefaultBase45Service();
         val compressorService: CompressorService = DefaultCompressorService();
@@ -99,7 +104,13 @@ class MainActivity : FlutterActivity() {
         );
 
         viewModel.decode(qrcode, true)
+        */
 
-        return qrCodeData
+        // è una @HiltViewModel!!!
+
+        val vvm: VerificationViewModel =
+            ViewModelProvider(this.activity).get(VerificationViewModel::class.java) // TODO!!!!! Cosa passare come ViewModelStoreOwner?????
+
+        return vvm.toString()
     }
 }
