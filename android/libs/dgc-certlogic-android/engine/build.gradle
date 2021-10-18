@@ -1,0 +1,73 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
+
+android {
+    compileSdkVersion Config.compileSdk
+
+    defaultConfig {
+        minSdkVersion Config.minSdk
+        targetSdkVersion Config.targetSdk
+        versionCode Config.versionCode
+        versionName Config.versionName
+
+        testInstrumentationRunner Config.androidTestInstrumentation
+        consumerProguardFiles Config.proguardConsumerRules
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        coreLibraryDesugaringEnabled true
+
+        sourceCompatibility Config.javaVersion
+        targetCompatibility Config.javaVersion
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.each { output ->
+            def lintTask = tasks["lint${variant.name.capitalize()}"]
+            output.assemble.dependsOn lintTask
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+    
+    implementation Deps.kotlin_stdlib
+    implementation Deps.kotlin_reflect
+    implementation Deps.kotlinx_coroutines_core
+    implementation Deps.jackson_cbor
+    implementation Deps.jackson_kotlin
+    implementation Deps.jackson_datetype
+
+    testImplementation Deps.test_junit
+    testImplementation Deps.test_junit_jupiter_api
+    testImplementation Deps.test_junit_jupiter_params
+    testImplementation Deps.test_hamcrest
+    testRuntimeOnly Deps.test_runtime_only
+
+    testImplementation Deps.appache_commons
+
+    testImplementation "org.mockito:mockito-core:3.9.0"
+    testImplementation "org.mockito.kotlin:mockito-kotlin:3.2.0"
+
+    // AndroidJUnitRunner and JUnit Rules
+    androidTestImplementation Deps.test_runner
+    androidTestImplementation Deps.test_rules
+    androidTestImplementation Deps.test_ext
+    androidTestImplementation Deps.appache_commons
+}
