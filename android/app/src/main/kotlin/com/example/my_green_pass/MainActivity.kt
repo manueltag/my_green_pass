@@ -106,10 +106,12 @@ class MainActivity : FlutterActivity() {
         viewModel.decode(qrcode, true)
         */
 
-        // è una @HiltViewModel!!!
+        // @HiltViewModel!!!
+        // https://developer.android.com/training/dependency-injection/dagger-android#dagger-subcomponents
+        // https://developer.android.com/training/dependency-injection/dagger-multi-module#kotlin
 
         val vvm: VerificationViewModel =
-            ViewModelProvider(this.activity).get(VerificationViewModel::class.java) // TODO!!!!! Cosa passare come ViewModelStoreOwner?????
+            ViewModelProvider(this.activity).get(VerificationViewModel::class.java) // TODO!!!!! Guardare i link sopra!!!
 
         return vvm.toString()
     }
