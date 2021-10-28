@@ -57,7 +57,7 @@ class MainActivity : FlutterFragmentActivity() {
                             val verificationViewModelJson: String =
                                 Gson().toJson(myCertificateModel)
 
-                            println("MODEELELELELEL JSON" + verificationViewModelJson);
+                            println("MODEL JSON: " + verificationViewModelJson);
 
                             result.success(verificationViewModelJson)
                         }
