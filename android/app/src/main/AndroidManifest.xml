@@ -3,6 +3,7 @@
     package="com.example.my_green_pass">
    <application
         tools:replace="label"
+        android:name=".VerificaApplication"
         android:label="my_green_pass"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -39,5 +40,11 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+       <provider
+           android:name="androidx.work.impl.WorkManagerInitializer"
+           android:authorities="${applicationId}.workmanager-init"
+           android:exported="false"
+           tools:node="remove" />
     </application>
 </manifest>
