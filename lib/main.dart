@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,22 +32,46 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  static const platform = MethodChannel('manueltag.dev/decodeqrcode');
+  final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+  QRViewController? controller;
+  Barcode? result;
 
-  String _qrCodeData = 'Data:';
+  static const MethodChannel _verificationViewModelMethodChannel =
+      MethodChannel('manueltag.dev/verifyqrcode');
 
-  Future<void> _getDecodedQrCode() async {
-    String qrCodeData;
-    try {
-      final String result = await platform.invokeMethod('decodeQrCode');
-      qrCodeData = 'Data: $result';
-    } on PlatformException catch (e) {
-      qrCodeData = "Failed to get data: '${e.message}'.";
-    }
+  String? _verificationViewModel;
 
-    setState(() {
-      _qrCodeData = qrCodeData;
+  void _onQRViewCreated(QRViewController controller) {
+    this.controller = controller;
+    controller.scannedDataStream.listen((scanData) {
+      if (scanData.format == BarcodeFormat.qrcode) {
+        if (result != null && result!.code == scanData.code) {
+          return;
+        }
+        _verifyQrCode(scanData);
+        setState(() {
+          result = scanData;
+        });
+      }
     });
+  }
+
+  Future<void> _verifyQrCode(Barcode result) async {
+    String verificationViewModel;
+    try {
+      var params = <String, dynamic>{
+        'qrcode': result.code,
+      };
+
+      verificationViewModel = await _verificationViewModelMethodChannel
+          .invokeMethod('verifyQrCode', params);
+
+      setState(() {
+        _verificationViewModel = verificationViewModel;
+      });
+    } on PlatformException catch (e) {
+      print("Failed to get data: '${e.message}'.");
+    }
   }
 
   @override
@@ -55,14 +81,60 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            ElevatedButton(
-              child: const Text('Decode qrcode'),
-              onPressed: _getDecodedQrCode,
+            Expanded(
+              flex: 5,
+              child: QRView(
+                key: qrKey,
+                onQRViewCreated: _onQRViewCreated,
+              ),
             ),
-            Text(_qrCodeData),
+            Expanded(
+              flex: 2,
+              child: Center(
+                child: (result != null)
+                    ? Text('Data: ${result!.code}')
+                    : const Text('Scan a code'),
+              ),
+            ),
+            Expanded(
+              flex: 3,
+              child: (_verificationViewModel != null)
+                  ? Text('Data: ${_verificationViewModel!}')
+                  : const Text('Waiting...'),
+            ),
           ],
         ),
       ),
     );
   }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
 }
+
+/*
+data class MyCertificateModel(
+    @SerializedName("person")
+    var person: MySimplePersonModel = MySimplePersonModel(),
+    @SerializedName("dateOfBirth")
+    var dateOfBirth: String? = null,
+    @SerializedName("certificateStatus")
+    var certificateStatus: CertificateStatus? = null,
+    @SerializedName("timeStamp")
+    var timeStamp: Date? = null
+)
+
+data class MySimplePersonModel(
+    @SerializedName("standardisedFamilyName")
+    var standardisedFamilyName: String? = null,
+    @SerializedName("familyName")
+    var familyName: String? = null,
+    @SerializedName("standardisedGivenName")
+    var standardisedGivenName: String? = null,
+    @SerializedName("givenName")
+    var givenName: String? = null
+)
+*/
